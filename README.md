@@ -103,11 +103,34 @@ this before anything is sent.
 
 Check what's switched on at `GET /api/status`.
 
-## Deploy
+## Deploy (Cloudflare Workers)
 
-Push to GitHub and import the repo at [vercel.com](https://vercel.com) (free hobby tier). Add the same
-environment variables under Project → Settings → Environment Variables, then add the deployed URL to
-Supabase's redirect URLs.
+Live at **https://perfectm0tch.kdlindsey25.workers.dev**. The Worker is named `perfectm0tch`
+(`wrangler.jsonc`) and is built with the [OpenNext Cloudflare adapter](https://opennext.js.org/cloudflare).
+The free Workers plan covers this app.
+
+```bash
+npx wrangler login     # once, or set CLOUDFLARE_API_TOKEN
+npm run preview        # build and run locally in the real Workers runtime
+npm run deploy         # build and deploy to perfectm0tch
+```
+
+**Environment variables on Cloudflare:**
+- `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` are baked in at **build** time. Put them in
+  `.env.local` before `npm run deploy`, or under *Build variables* if you use Workers Builds (Git integration).
+- `GEMINI_API_KEY` (and optional `GEMINI_MODEL`) are read at **run** time. Store them as secrets:
+  `npx wrangler secret put GEMINI_API_KEY`. No redeploy is needed.
+- Add the Workers URL to Supabase → Authentication → URL Configuration.
+
+**Auto-deploy on push (optional):** in the Cloudflare dashboard go to Workers & Pages → perfectm0tch →
+Settings → Builds, connect this GitHub repo, and set the deploy command to `npm run deploy`.
+
+Two compatibility notes:
+- `patches/@opennextjs+cloudflare+1.20.9.patch` teaches the adapter about `preview-props.json`, a file Next.js
+  16.4 added and the adapter doesn't load yet. It's applied automatically on `npm install` (`postinstall`).
+  Remove it once a newer `@opennextjs/cloudflare` handles that file.
+- Next.js "Cache Components" is turned off in `next.config.ts`. Pages hang under it on Workers, and the app
+  doesn't use it.
 
 ## Project map
 
