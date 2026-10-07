@@ -1,6 +1,7 @@
 "use client";
 
 import type { Warning } from "@/lib/ingredients";
+import { EvidenceBadge, Sources } from "./Evidence";
 import { Badge, cx } from "./ui";
 
 const TONE = { high: "bad", medium: "warn", low: "neutral" } as const;
@@ -34,6 +35,12 @@ export function IngredientWarnings({
               <li key={r}>{r}</li>
             ))}
           </ul>
+          {w.evidence && (
+            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+              <EvidenceBadge level={w.evidence.level} />
+              <Sources ids={w.evidence.sources} />
+            </div>
+          )}
           {onClear && (
             <button type="button" onClick={() => onClear(w.ingredient)} className="mt-2 text-xs underline underline-offset-4">
               This one&apos;s fine for me

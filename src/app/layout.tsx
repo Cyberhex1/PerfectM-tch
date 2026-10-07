@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Link from "next/link";
 import { Inter, Instrument_Serif } from "next/font/google";
 import { ProfileProvider } from "@/components/ProfileProvider";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -24,7 +25,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main className="flex-1">{children}</main>
           <footer className="mx-auto w-full max-w-5xl px-5 py-10 text-xs leading-relaxed text-faint">
             PerfectMatch gives cosmetic suggestions, not medical advice. For persistent skin problems, see a
-            dermatologist. Shade data: The Pudding (MIT). Ingredient data: Open Beauty Facts (ODbL).
+            dermatologist. Skincare guidance is graded against published research —{" "}
+            <Link href="/science" className="underline underline-offset-2">
+              how we use science
+            </Link>
+            . Shade data: The Pudding (MIT). Ingredient data: Open Beauty Facts (ODbL).
           </footer>
         </ProfileProvider>
       </body>

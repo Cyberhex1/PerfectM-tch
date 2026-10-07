@@ -16,6 +16,13 @@ which ingredients your skin doesn't like, and gets more accurate every time you 
 4. **Your profile.** Foundation matches across 314 formulas and about 6,700 real shades, makeup colours,
    an AM/PM skincare routine, and an ingredient radar.
 
+**Skincare grounded in science.** Every skincare recommendation and ingredient warning is tied to published
+dermatology research: AAD clinical guidelines, randomized trials and reviews. Each one carries an evidence
+grade (strong, moderate, limited or expert consensus) and links to PubMed. Products are ranked by the
+strength of the evidence that their active ingredients help *your* concerns. All 43 sources in
+`src/lib/evidence.ts` were checked against their PubMed records. Their sources and grading are explained at
+`/science`. Tests in `tests/evidence.test.ts` make sure every claim cites a real source.
+
 **How it gets better over time.** Shades you've actually worn count about 3× more than the photo. "Too light",
 "too pink" and similar feedback shifts your target colour and rules out shades that were wrong. Ingredient
 lists from products that didn't work are compared against ones that did, so repeat offenders get flagged
@@ -110,7 +117,8 @@ src/lib/skinAnalysis.ts   on-device photo analysis (face region, sampling, light
 src/lib/foundations.ts    shade library, fuzzy product/shade recognition, ranking
 src/lib/learning.ts       combines photo + quiz + worn shades into one skin model; profile strength
 src/lib/ingredients.ts    INCI parsing, irritant knowledge base, personal pattern detection
-src/lib/skincare.ts       routine builder + curated product catalog
+src/lib/evidence.ts       graded claims + verified citations behind all skincare advice
+src/lib/skincare.ts       evidence-ranked routine builder + curated product catalog
 src/lib/makeup.ts         concealer/blush/bronzer/lip/eye suggestions
 src/lib/recommend.ts      turns logged feedback into ranking constraints
 src/lib/server/*          Gemini + Open Beauty Facts (server-only)

@@ -6,6 +6,7 @@
  * here are fine for most people — they're flagged because they're common culprits
  * when skin does react.
  */
+import type { EvidenceLevel } from "./evidence";
 import type { Profile, ProductEntry, QuizAnswers, Reaction } from "./types";
 
 export type Family =
@@ -26,14 +27,14 @@ export type Family =
 export const FAMILY_LABEL: Record<Family, string> = {
   fragrance: "Fragrance",
   "essential-oil": "Essential oils",
-  "drying-alcohol": "Drying alcohols",
+  "drying-alcohol": "Alcohol (ethanol)",
   sulfate: "Harsh sulfates",
   "preservative-allergen": "Allergenic preservatives",
   "exfoliant-acid": "Exfoliating acids",
   retinoid: "Retinoids",
   "benzoyl-peroxide": "Benzoyl peroxide",
   "vitamin-c": "L-ascorbic acid (vitamin C)",
-  "pore-clogging": "Can clog pores",
+  "pore-clogging": "Possibly pore-clogging",
   "chemical-filter": "Sensitizing sunscreen filters",
   lanolin: "Lanolin",
   "other-allergen": "Known contact allergens",
@@ -45,114 +46,147 @@ type Rule = {
   /** base concern level for anyone */
   base: 0 | 1 | 2;
   why: string;
+  /** how good the evidence is that this ingredient causes problems, and where it comes from */
+  evidence: { level: EvidenceLevel; sources: string[] };
 };
 
 /**
  * Order matters a little: the first matching rule wins for each ingredient.
  * Patterns run against normalised ingredient names (lowercase, single spaces).
  */
-const RULES: Rule[] = [
+export const RULES: Rule[] = [
   {
     family: "preservative-allergen",
     match: /^(methylchloroisothiazolinone|methylisothiazolinone|mci|mit)$/,
     base: 2,
-    why: "Isothiazolinone preservatives are among the most common causes of cosmetic contact allergy.",
+    why: "Isothiazolinone preservatives caused an epidemic of contact allergy and were named Allergen of the Year in 2013. The EU has since banned methylisothiazolinone in leave-on cosmetics.",
+    evidence: { level: "strong", sources: ["castanedo-2013"] },
   },
   {
     family: "preservative-allergen",
     match: /^(dmdm hydantoin|imidazolidinyl urea|diazolidinyl urea|quaternium 15|2 bromo 2 nitropropane 1 3 diol|bronopol|sodium hydroxymethylglycinate)$/,
     base: 1,
-    why: "A formaldehyde-releasing preservative — a frequent trigger for people with sensitive or allergy-prone skin.",
+    why: "A formaldehyde-releasing preservative. People allergic to formaldehyde often react to these.",
+    evidence: { level: "strong", sources: ["degroot-fr-2010"] },
   },
   {
     family: "fragrance",
     match: /^(fragrance|parfum|perfume|aroma|flavor|flavour)$/,
     base: 1,
-    why: "Fragrance is the #1 cause of cosmetic skin reactions, and the label hides what's in the blend.",
+    why: "Fragrance is one of the most common causes of allergic reactions to cosmetics, and the label doesn't say what's in the blend.",
+    evidence: { level: "strong", sources: ["degroot-2020", "dekoven-2023"] },
   },
   {
     family: "fragrance",
     match: /^(linalool|limonene|d limonene|citronellol|geraniol|eugenol|isoeugenol|coumarin|citral|cinnamal|cinnamyl alcohol|hexyl cinnamal|amyl cinnamal|benzyl benzoate|benzyl salicylate|benzyl cinnamate|farnesol|hydroxycitronellal|alpha isomethyl ionone|butylphenyl methylpropional|anise alcohol|evernia prunastri extract|evernia furfuracea extract)$/,
     base: 1,
-    why: "A labelled fragrance allergen (EU-listed) — often from added fragrance or essential oils.",
+    why: "A fragrance allergen that EU law requires on labels. Linalool and limonene become much more allergenic once they oxidise in air.",
+    evidence: { level: "moderate", sources: ["degroot-2020", "bennike-2019"] },
   },
   {
     family: "essential-oil",
     match: /\b(lavandula|lavender|mentha|peppermint|spearmint|eucalyptus|melaleuca|tea tree|citrus|bergamot|lemon|orange|grapefruit|lime|rosmarinus|rosemary|cananga|ylang ylang|eugenia caryophyllus|clove|cinnamomum|cinnamon|pelargonium|geranium|juniperus|cymbopogon|lemongrass|salvia sclarea|clary sage|origanum|thymus|thyme|santalum|sandalwood|rosa damascena|jasminum|jasmine|pogostemon|patchouli|cedrus|cedarwood|chamomilla recutita|anthemis nobilis|ocimum|basil)\b.*\boil\b/,
     base: 1,
-    why: "Essential oils smell nice but contain fragrance compounds that commonly irritate sensitive skin.",
+    why: "Essential oils are mixtures of fragrance chemicals. Many, including tea tree, lavender and ylang-ylang, are documented contact allergens.",
+    evidence: { level: "moderate", sources: ["degroot-eo-2016"] },
   },
   {
     family: "essential-oil",
     match: /^(menthol|camphor|menthyl lactate)$/,
-    base: 1,
-    why: "Gives a cooling tingle — which is actually mild irritation for sensitive skin.",
+    base: 0,
+    why: "Creates a cooling tingle, which can sting reactive skin.",
+    evidence: { level: "expert", sources: [] },
   },
   {
     family: "drying-alcohol",
     match: /^(alcohol denat|denatured alcohol|sd alcohol( \w+)*|alcohol|ethanol|ethyl alcohol|isopropyl alcohol)$/,
-    base: 1,
-    why: "Volatile alcohol high in a formula can dry and sensitize skin, especially if you're dry or reactive.",
+    base: 0,
+    why: "Alcohol in skincare is generally safe on healthy skin, but it can sting or worsen skin whose barrier is already damaged (eczema, over-exfoliation).",
+    evidence: { level: "limited", sources: ["lachenmeier-2008"] },
   },
   {
     family: "other-allergen",
     match: /^(hamamelis virginiana( \w+)*|witch hazel( \w+)*)$/,
     base: 0,
-    why: "Witch hazel is astringent and some preparations contain alcohol — can sting reactive skin.",
+    why: "Witch hazel is an astringent, and some preparations contain alcohol. It can sting reactive skin.",
+    evidence: { level: "expert", sources: [] },
   },
   {
     family: "sulfate",
-    match: /^(sodium lauryl sulfate|ammonium lauryl sulfate|sodium laureth sulfate|ammonium laureth sulfate|sls|sles)$/,
+    match: /^(sodium lauryl sulfate|ammonium lauryl sulfate|sls)$/,
     base: 1,
-    why: "Strong cleansing surfactants that can strip the skin barrier (SLS especially).",
+    why: "Sodium lauryl sulfate is irritating enough that researchers use it as the standard way to irritate skin in experiments.",
+    evidence: { level: "strong", sources: ["lee-1995"] },
+  },
+  {
+    family: "sulfate",
+    match: /^(sodium laureth sulfate|ammonium laureth sulfate|sles)$/,
+    base: 0,
+    why: "A cleansing surfactant that is milder than SLS in head-to-head testing, but can still dry out reactive skin.",
+    evidence: { level: "moderate", sources: ["charbonnier-2001"] },
   },
   {
     family: "retinoid",
     match: /^(retinol|retinal|retinaldehyde|retinyl palmitate|retinyl acetate|retinyl retinoate|hydroxypinacolone retinoate|tretinoin|adapalene|tazarotene)$/,
     base: 0,
-    why: "Powerful anti-aging/acne active; can cause dryness and peeling while skin adjusts.",
+    why: "A well-proven active, but dryness and peeling (retinoid dermatitis) are common while skin adjusts.",
+    evidence: { level: "strong", sources: ["aad-acne-2024"] },
   },
   {
     family: "exfoliant-acid",
     match: /^(glycolic acid|lactic acid|mandelic acid|salicylic acid|malic acid|tartaric acid|beta hydroxy acid|betaine salicylate|gluconolactone)$/,
     base: 0,
-    why: "Exfoliating acid — great for texture and breakouts, but can sting sensitive or compromised skin.",
+    why: "An exfoliating acid. It can sting compromised skin, and glycolic acid measurably increases UV sensitivity.",
+    evidence: { level: "moderate", sources: ["kornhauser-2009", "kornhauser-2010"] },
   },
   {
     family: "benzoyl-peroxide",
     match: /^benzoyl peroxide$/,
     base: 0,
-    why: "Effective acne treatment that commonly causes dryness and irritation (and bleaches fabric).",
+    why: "One of the best-proven acne treatments, but dryness and irritation are common (and it bleaches fabric).",
+    evidence: { level: "strong", sources: ["aad-acne-2024"] },
   },
   {
     family: "vitamin-c",
     match: /^(ascorbic acid|l ascorbic acid)$/,
     base: 0,
-    why: "Pure vitamin C is acidic and can tingle or irritate sensitive skin at high strengths.",
+    why: "Pure vitamin C is formulated at low pH and can tingle on sensitive skin.",
+    evidence: { level: "limited", sources: ["telang-2013"] },
   },
   {
     family: "pore-clogging",
     match: /^(cocos nucifera oil|coconut oil|isopropyl myristate|isopropyl palmitate|isopropyl isostearate|myristyl myristate|laureth 4|theobroma cacao seed butter|cocoa butter|triticum vulgare germ oil|wheat germ oil|acetylated lanolin|ethylhexyl palmitate|octyl palmitate|isostearyl isostearate)$/,
     base: 0,
-    why: "Rated as potentially pore-clogging. Ratings are rough, but worth noting if you break out easily.",
+    why: "Listed as “comedogenic” based on old animal tests. Human testing found that finished products containing these ingredients often don't clog pores, so treat this as a weak signal unless you notice a pattern.",
+    evidence: { level: "limited", sources: ["draelos-2006-comedo"] },
   },
   {
     family: "chemical-filter",
-    match: /^(oxybenzone|benzophenone 3|octocrylene|methylene bis benzotriazolyl tetramethylbutylphenol|avobenzone|butyl methoxydibenzoylmethane|homosalate)$/,
+    match: /^(oxybenzone|benzophenone 3|octocrylene|avobenzone|butyl methoxydibenzoylmethane)$/,
     base: 0,
-    why: "Some people find this UV filter stings or irritates (especially around the eyes).",
+    why: "Benzophenones (oxybenzone) and octocrylene are recognised causes of contact and photo-allergy. Avobenzone is a less common one.",
+    evidence: { level: "moderate", sources: ["heurung-2014", "degroot-octo-2014"] },
   },
   {
     family: "lanolin",
     match: /^(lanolin|lanolin alcohol|lanolin oil|wool wax|wool wax alcohol)$/,
     base: 0,
-    why: "Lanolin is a known contact allergen for a minority of people.",
+    why: "Named Allergen of the Year in 2023 by the American Contact Dermatitis Society. Reactions are more likely on damaged skin.",
+    evidence: { level: "moderate", sources: ["jenkins-2023"] },
   },
   {
     family: "other-allergen",
-    match: /^(propylene glycol|cocamidopropyl betaine|propolis|propolis extract|tocopheryl acetate|benzyl alcohol)$/,
+    match: /^propylene glycol$/,
     base: 0,
-    why: "Generally well tolerated, but a recognised contact allergen for some people.",
+    why: "Named Allergen of the Year in 2018. It is well tolerated by most people but a recognised allergen for some.",
+    evidence: { level: "moderate", sources: ["jacob-2018"] },
+  },
+  {
+    family: "other-allergen",
+    match: /^(cocamidopropyl betaine|propolis|propolis extract|tocopheryl acetate|benzyl alcohol)$/,
+    base: 0,
+    why: "Generally well tolerated, but a recognised contact allergen for a small number of people.",
+    evidence: { level: "expert", sources: [] },
   },
 ];
 
@@ -363,6 +397,8 @@ export type Warning = {
   family?: Family;
   level: "high" | "medium" | "low";
   reasons: string[];
+  /** evidence behind the general (non-personal) part of the warning */
+  evidence?: { level: EvidenceLevel; sources: string[] };
 };
 
 /** How much this person should care about an ingredient family, given their answers. */
@@ -377,14 +413,18 @@ function profileBoost(fam: Family, quiz: QuizAnswers): { boost: number; why?: st
       if (somewhat) return { boost: 0.5 };
       return { boost: 0 };
     case "drying-alcohol":
-      if (quiz.skinType === "dry" || sensitive) return { boost: 1, why: quiz.skinType === "dry" ? "Your skin runs dry." : "Your skin is sensitive." };
-      return { boost: 0 };
+      // matters for an impaired barrier, not for healthy dry skin
+      return sensitive ? { boost: 1, why: "Your skin is reactive, which suggests a more fragile barrier." } : { boost: 0 };
     case "sulfate":
-      return quiz.skinType === "dry" || sensitive ? { boost: 1, why: "Strong cleansers can aggravate dry or reactive skin." } : { boost: 0 };
+      return quiz.skinType === "dry" || sensitive ? { boost: 1, why: "Strong surfactants can aggravate dry or reactive skin." } : { boost: 0 };
     case "pore-clogging":
-      return quiz.acneProne || quiz.concerns.includes("acne") ? { boost: 1.5, why: "You're breakout-prone." } : { boost: -1 };
+      return quiz.acneProne || quiz.concerns.includes("acne") ? { boost: 0.75, why: "You're breakout-prone." } : { boost: -1 };
     case "retinoid":
-      if (quiz.pregnant) return { boost: 2.5, why: "Retinoids are generally avoided during pregnancy and breastfeeding — check with your doctor." };
+      if (quiz.pregnant)
+        return {
+          boost: 2.5,
+          why: "Topical retinoids are avoided during pregnancy as a precaution, while azelaic acid and benzoyl peroxide are generally considered acceptable (McMullan et al., JAAD 2024). Check with your doctor.",
+        };
       return sensitive ? { boost: 1, why: "Go slowly — your skin is sensitive." } : { boost: 0 };
     case "exfoliant-acid":
     case "benzoyl-peroxide":
@@ -446,7 +486,7 @@ export function checkIngredients(text: string, profile: Profile, signals = perso
       }
     }
     const level = levelFrom(score);
-    if (level && reasons.length) out.push({ ingredient: ing, family: rule?.family, level, reasons });
+    if (level && reasons.length) out.push({ ingredient: ing, family: rule?.family, level, reasons, evidence: rule?.evidence });
   });
 
   return out.sort((a, b) => LEVELS.indexOf(b.level) - LEVELS.indexOf(a.level));
