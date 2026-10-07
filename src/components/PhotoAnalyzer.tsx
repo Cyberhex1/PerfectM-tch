@@ -11,6 +11,7 @@ import {
   type SamplePoint,
 } from "@/lib/skinAnalysis";
 import { localDate, readPhotoDate } from "@/lib/exif";
+import { detectFace } from "@/lib/faceDetect";
 import { toJpeg } from "@/lib/photoStore";
 import type { PhotoAnalysis } from "@/lib/types";
 import { Badge, Button, Card, cx, Meter, Notice, Spinner, Swatch } from "./ui";
@@ -34,7 +35,17 @@ export const concernLabel = (k: string) => CONCERN_LABEL[k] ?? k;
 const uploadBtn =
   "inline-flex cursor-pointer items-center justify-center rounded-full px-5 py-2.5 text-sm font-medium transition focus-within:ring-4 focus-within:ring-accent-soft";
 
-type Loaded = { url: string; pixels: Pixels; box: FaceBox; aiImage: string; image: Blob; thumb: Blob; takenAt: string };
+type Loaded = {
+  url: string;
+  pixels: Pixels;
+  box: FaceBox;
+  /** sample points placed from detected eyes/mouth, when face detection worked */
+  points?: SamplePoint[];
+  aiImage: string;
+  image: Blob;
+  thumb: Blob;
+  takenAt: string;
+};
 
 /** What the gallery needs to keep a photo: a compressed copy, a thumbnail, its date and sample points. */
 export type Capture = { image: Blob; thumb: Blob; takenAt: string; points: SamplePoint[] };
@@ -65,9 +76,23 @@ async function decode(file: Blob): Promise<Loaded> {
   const pixels: Pixels = { data: ctx.getImageData(0, 0, canvas.width, canvas.height).data, width: canvas.width, height: canvas.height };
   const url = canvas.toDataURL("image/jpeg", 0.9);
   const aiImage = draw(768).canvas.toDataURL("image/jpeg", 0.85);
-  const [image, thumb, exif] = await Promise.all([toJpeg(source, 1280), toJpeg(source, 360, 0.8), readPhotoDate(file)]);
+  const [image, thumb, exif, face] = await Promise.all([
+    toJpeg(source, 1280),
+    toJpeg(source, 360, 0.8),
+    readPhotoDate(file),
+    detectFace(canvas),
+  ]);
   const modified = file instanceof File && file.lastModified ? localDate(new Date(file.lastModified)) : null;
-  return { url, pixels, box: findFaceBox(pixels), aiImage, image, thumb, takenAt: exif ?? modified ?? localDate() };
+  return {
+    url,
+    pixels,
+    box: face?.box ?? findFaceBox(pixels),
+    points: face?.points,
+    aiImage,
+    image,
+    thumb,
+    takenAt: exif ?? modified ?? localDate(),
+  };
 }
 
 export function PhotoAnalyzer({
@@ -129,7 +154,7 @@ export function PhotoAnalyzer({
     setAiState({});
     try {
       const l = await decode(file);
-      const usePts = pts?.length ? pts : defaultSamplePoints(l.box, l.pixels);
+      const usePts = pts?.length ? pts : l.points ?? defaultSamplePoints(l.box, l.pixels);
       setLoaded(l);
       setPoints(usePts);
       run(l, usePts, keepAi);

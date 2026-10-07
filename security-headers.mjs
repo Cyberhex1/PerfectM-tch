@@ -8,7 +8,8 @@ export const SECURITY_HEADERS = [
     value: [
       "default-src 'self'",
       // Next.js inlines its bootstrap scripts and styles
-      "script-src 'self' 'unsafe-inline'",
+      // wasm-unsafe-eval: on-device face detection (MediaPipe WebAssembly, served from our origin)
+      "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",
       "style-src 'self' 'unsafe-inline'",
       // blob: = on-device gallery photos; Open Beauty Facts product thumbnails
       "img-src 'self' data: blob: https://images.openbeautyfacts.org",

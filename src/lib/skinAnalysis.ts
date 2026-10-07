@@ -60,7 +60,7 @@ export function findFaceBox(px: Pixels): FaceBox {
 
   // connected components, scored by size and closeness to the centre
   const label = new Int32Array(gw * gh).fill(-1);
-  let best: { score: number; minX: number; minY: number; maxX: number; maxY: number } | null = null;
+  let best: { id: number; score: number; minX: number; minY: number; maxX: number; maxY: number } | null = null;
   for (let start = 0; start < grid.length; start++) {
     if (!grid[start] || label[start] !== -1) continue;
     const stack = [start];
@@ -102,18 +102,54 @@ export function findFaceBox(px: Pixels): FaceBox {
     const cx = sx / count / gw - 0.5;
     const cy = sy / count / gh - 0.45;
     const score = count * (1 - Math.min(0.9, Math.hypot(cx, cy) * 1.4));
-    if (!best || score > best.score) best = { score, minX, minY, maxX, maxY };
+    if (!best || score > best.score) best = { id: start, score, minX, minY, maxX, maxY };
   }
 
   if (!best || (best.maxX - best.minX + 1) * (best.maxY - best.minY + 1) < gw * gh * 0.02) {
     // no convincing skin region — assume a centred selfie
     return { x: width * 0.25, y: height * 0.15, w: width * 0.5, h: height * 0.62 };
   }
-  const x = best.minX * cell;
+  // Necks, chests and shoulders usually join the face in one skin region, which would drag
+  // the box (and every sample point) down onto the neck. Walk down row by row from the
+  // hairline and stop at the chin: where the skin narrows into the neck, or once the face
+  // is ~1.3× as tall as it is wide (typical facial proportions), whichever comes first.
+  const rows: { min: number; max: number; n: number }[] = [];
+  for (let gy = best.minY; gy <= best.maxY; gy++) {
+    let min = gw;
+    let max = -1;
+    for (let gx = best.minX; gx <= best.maxX; gx++) {
+      if (label[gy * gw + gx] !== best.id) continue;
+      min = Math.min(min, gx);
+      max = Math.max(max, gx);
+    }
+    rows.push({ min, max, n: max >= min ? max - min + 1 : 0 });
+  }
+  const smooth = rows.map((_, i) => {
+    const win = rows.slice(Math.max(0, i - 1), i + 2);
+    return win.reduce((t, r) => t + r.n, 0) / win.length;
+  });
+  let widest = 0;
+  let bottom = rows.length - 1;
+  for (let i = 0; i < rows.length; i++) {
+    widest = Math.max(widest, smooth[i]);
+    const narrowing = i > 3 && smooth[i] < widest * 0.7;
+    const tallEnough = i > widest * 1.3;
+    if (narrowing || tallEnough) {
+      bottom = i;
+      break;
+    }
+  }
+  let minX = gw;
+  let maxX = 0;
+  for (let i = 0; i <= bottom; i++) {
+    if (!rows[i].n) continue;
+    minX = Math.min(minX, rows[i].min);
+    maxX = Math.max(maxX, rows[i].max);
+  }
+  const x = minX * cell;
   const y = best.minY * cell;
-  const w = Math.min(width - x, (best.maxX - best.minX + 1) * cell);
-  // necks and chests often join the face blob: cap the height relative to width
-  const h = Math.min(height - y, (best.maxY - best.minY + 1) * cell, w * 1.4);
+  const w = Math.min(width - x, (maxX - minX + 1) * cell);
+  const h = Math.min(height - y, (bottom + 1) * cell, w * 1.5);
   return { x, y, w, h };
 }
 
@@ -222,6 +258,17 @@ export function analyzeSkin(px: Pixels, points: SamplePoint[], box: FaceBox): Ph
   if (faceStats.cast > 0.35) {
     quality *= 0.8;
     warnings.push("The lighting has a strong colour cast (warm bulbs or screens). Natural daylight is most accurate.");
+  }
+  // Sample spots far apart in lightness mean shine on some and shadow on others. The
+  // average is then a guess, so say so and trust the photo less (deeper skin shows
+  // shine and shadow especially strongly in uneven light).
+  const patchLs = patches.map((x) => x.s.lab.L);
+  const lightSpread = patchLs.length > 1 ? Math.max(...patchLs) - Math.min(...patchLs) : 0;
+  if (lightSpread > 18) {
+    quality *= lightSpread > 30 ? 0.55 : 0.75;
+    warnings.push(
+      "The light on your face is very uneven — some spots are in shine, others in shadow — so this colour reading is a rough guess. Pick your shade from the scale below, or retake facing a window.",
+    );
   }
   const lowSkin = patches.filter((x) => x.s.skinShare < 0.5).length;
   if (lowSkin) {

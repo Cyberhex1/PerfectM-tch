@@ -50,3 +50,6 @@ next-env.d.ts
 !.dev.vars.example
 /.pages-dist/
 /.pages-bundle/
+
+# MediaPipe runtime is copied from node_modules on install
+/public/mediapipe/
