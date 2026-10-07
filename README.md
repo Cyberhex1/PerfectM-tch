@@ -105,7 +105,8 @@ Check what's switched on at `GET /api/status`.
 
 ## Deploy (Cloudflare Workers)
 
-Live at **https://perfectm0tch.kdlindsey25.workers.dev**. The Worker is named `perfectm0tch`
+Live at **https://perfectm0tch.pages.dev** (Cloudflare Pages, deployed with `npm run deploy:pages`) and
+**https://perfectm0tch.kdlindsey25.workers.dev** (Cloudflare Workers, deployed with `npm run deploy`). Both run the same build. The Worker is named `perfectm0tch`
 (`wrangler.jsonc`) and is built with the [OpenNext Cloudflare adapter](https://opennext.js.org/cloudflare).
 The free Workers plan covers this app.
 
@@ -120,7 +121,8 @@ npm run deploy         # build and deploy to perfectm0tch
   `.env.local` before `npm run deploy`, or under *Build variables* if you use Workers Builds (Git integration).
 - `GEMINI_API_KEY` (and optional `GEMINI_MODEL`) are read at **run** time. Store them as secrets:
   `npx wrangler secret put GEMINI_API_KEY`. No redeploy is needed.
-- Add the Workers URL to Supabase → Authentication → URL Configuration.
+- Add the site URL(s) to Supabase → Authentication → URL Configuration.
+- For the Pages site, set `GEMINI_API_KEY` with `npx wrangler pages secret put GEMINI_API_KEY --project-name perfectm0tch`.
 
 **Auto-deploy on push (optional):** in the Cloudflare dashboard go to Workers & Pages → perfectm0tch →
 Settings → Builds, connect this GitHub repo, and set the deploy command to `npm run deploy`.
