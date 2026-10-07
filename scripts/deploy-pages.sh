@@ -13,7 +13,7 @@ cp -r .open-next/assets/. .pages-dist/
 cp .pages-bundle/worker.js .pages-dist/_worker.js/index.js
 # serve static files straight from the CDN without invoking the worker
 cat > .pages-dist/_routes.json <<'JSON'
-{ "version": 1, "include": ["/*"], "exclude": ["/_next/static/*", "/data/*", "/favicon.ico"] }
+{ "version": 1, "include": ["/*"], "exclude": ["/_next/static/*", "/data/*", "/mediapipe/*", "/models/*", "/favicon.ico"] }
 JSON
 # the same security headers for static files Pages serves directly
 node -e 'import("./security-headers.mjs").then(({ SECURITY_HEADERS: h }) => require("node:fs").writeFileSync(".pages-dist/_headers", ["/*", ...h.map((x) => `  ${x.key}: ${x.value}`)].join("\n") + "\n"))'
