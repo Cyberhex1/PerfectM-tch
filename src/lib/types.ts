@@ -30,6 +30,9 @@ export type DetectedConcern = {
   note: string;
 };
 
+/** Raw 0–1 readings for every tracked concern — recorded even when low, so they can be charted over time. */
+export type SkinMetrics = Record<"redness" | "oiliness" | "uneven-tone" | "texture" | "hyperpigmentation", number>;
+
 export type PhotoAnalysis = {
   analyzedAt: string;
   /** average sampled skin colour */
@@ -45,6 +48,7 @@ export type PhotoAnalysis = {
   quality: number;
   warnings: string[];
   concerns: DetectedConcern[];
+  metrics?: SkinMetrics;
   ai?: { model: string; summary: string; concerns: DetectedConcern[] };
 };
 
@@ -147,6 +151,8 @@ export type Profile = {
   /** ingredients the person said are fine for them (suppresses warnings) */
   cleared: string[];
   onboarding: { photo: boolean; quiz: boolean; products: boolean; budget: boolean };
+  /** photo gallery preference — undefined until the person has chosen */
+  gallery?: { enabled: boolean; decidedAt: string };
 };
 
 export const emptyProfile = (now = new Date().toISOString()): Profile => {

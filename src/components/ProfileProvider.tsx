@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { loadFoundations, type FoundationDb } from "@/lib/foundations";
 import { buildSkinModel, type SkinModel } from "@/lib/learning";
+import { reassignPhotos } from "@/lib/photoStore";
 import { getSupabase, supabaseConfigured } from "@/lib/supabase";
 import { emptyProfile, type Profile } from "@/lib/types";
 
@@ -18,6 +19,8 @@ type Ctx = {
   update: (fn: (p: Profile) => Profile) => void;
   reset: () => void;
   user: User | null;
+  /** whose on-device photos to show: the signed-in user's id, or "guest" */
+  ownerId: string;
   accountsEnabled: boolean;
   sync: SyncState;
   syncError?: string;
@@ -178,6 +181,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         next = Date.parse(local.updatedAt) > Date.parse(remote.updatedAt) ? local : remote;
       else if (ownerRef.current === "guest" && hasData(local)) next = mergeGuestInto(remote, local);
       else next = remote; // local data belonged to someone else on this device
+      // a guest's on-device photos come with them into their new account, like the rest of their profile
+      if (ownerRef.current === "guest" && (!remote || hasData(local))) reassignPhotos("guest", sessionUser.id).catch(() => {});
       adopt(next, sessionUser.id);
       setReady(true);
       if (next !== remote) await push(next, sessionUser.id);
@@ -237,7 +242,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const model = useMemo(() => buildSkinModel(profile, db), [profile, db]);
 
   const value = useMemo<Ctx>(
-    () => ({ ready, profile, update, reset, user, accountsEnabled: supabaseConfigured, sync, syncError, signOut, db, dbError, model }),
+    () => ({ ready, profile, update, reset, user, ownerId: user?.id ?? "guest", accountsEnabled: supabaseConfigured, sync, syncError, signOut, db, dbError, model }),
     [ready, profile, update, reset, user, sync, syncError, signOut, db, dbError, model],
   );
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;

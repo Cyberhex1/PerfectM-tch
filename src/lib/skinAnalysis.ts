@@ -13,7 +13,7 @@ import {
   undertoneAxisFromLab,
   undertoneFromAxis,
 } from "./color";
-import type { DetectedConcern, Lab, PhotoAnalysis } from "./types";
+import type { DetectedConcern, Lab, PhotoAnalysis, SkinMetrics } from "./types";
 
 export type Pixels = { data: Uint8ClampedArray; width: number; height: number };
 /** sample point in image-relative coordinates (0–1) */
@@ -245,7 +245,7 @@ export function analyzeSkin(px: Pixels, points: SamplePoint[], box: FaceBox): Ph
     undertoneAxis: axis,
     quality,
     warnings,
-    concerns: detectConcerns(px, box, lab, points, radius),
+    ...detectConcerns(px, box, lab, points, radius),
   };
 }
 
@@ -288,7 +288,7 @@ function detectConcerns(
   skin: Lab,
   points: SamplePoint[],
   radius: number,
-): DetectedConcern[] {
+): { concerns: DetectedConcern[]; metrics?: SkinMetrics } {
   // gather skin pixels inside the central face area (skip the hairline and chin edges)
   const x0 = Math.floor(box.x + box.w * 0.12);
   const x1 = Math.floor(box.x + box.w * 0.88);
@@ -327,7 +327,7 @@ function detectConcerns(
       blocks.set(key, blk);
     }
   }
-  if (as.length < 200) return [];
+  if (as.length < 200) return { concerns: [] };
 
   const out: DetectedConcern[] = [];
   const medA = median(as);
@@ -413,7 +413,16 @@ function detectConcerns(
       note: "There are some darker patches. These could be hyperpigmentation or simply shadows.",
     });
 
-  return out.sort((a, b) => b.score - a.score);
+  return {
+    concerns: out.sort((a, b) => b.score - a.score),
+    metrics: {
+      redness: redScore,
+      oiliness: shineScore,
+      "uneven-tone": unevenScore,
+      texture: textureScore,
+      hyperpigmentation: spotScore,
+    },
+  };
 }
 
 /** Downscale an image element into pixel data the analyser can use. */

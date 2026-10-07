@@ -23,6 +23,13 @@ strength of the evidence that their active ingredients help *your* concerns. All
 `src/lib/evidence.ts` were checked against their PubMed records. Their sources and grading are explained at
 `/science`. Tests in `tests/evidence.test.ts` make sure every claim cites a real source.
 
+**Photo gallery (optional).** Take a photo or upload one from a phone or computer, and set the date it was
+taken (read automatically from the photo's metadata when available). If the person opts in, photos are kept in
+a private gallery stored only on their device, in IndexedDB. Photos are never uploaded or synced. The gallery
+is organized by month, and tapping a photo shows its skin and foundation reading with links to the full
+recommendations. Trend charts and a before/after comparison show improvement or regression over time.
+Opting out deletes every saved photo, and photos are then only analyzed in memory and discarded.
+
 **How it gets better over time.** Shades you've actually worn count about 3× more than the photo. "Too light",
 "too pink" and similar feedback shifts your target colour and rules out shades that were wrong. Ingredient
 lists from products that didn't work are compared against ones that did, so repeat offenders get flagged

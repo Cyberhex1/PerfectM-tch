@@ -10,6 +10,7 @@ const TABS = [
   { href: "/profile/foundation", label: "Foundation" },
   { href: "/profile/makeup", label: "Makeup" },
   { href: "/profile/skincare", label: "Skincare" },
+  { href: "/profile/photos", label: "Photos" },
   { href: "/profile/products", label: "My products" },
   { href: "/profile/ingredients", label: "Ingredients" },
 ];
