@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useGallery } from "@/components/gallery/useGallery";
 import { PhotoAnalyzer, type Capture } from "@/components/PhotoAnalyzer";
+import { ToneCorrection } from "@/components/ToneCorrection";
 import { useProfile } from "@/components/ProfileProvider";
 import { Button, Chip, Eyebrow, Input, Spinner, Title } from "@/components/ui";
 import { localDate } from "@/lib/exif";
@@ -79,6 +80,13 @@ export default function PhotoStep() {
             setCapture(c);
           }}
         />
+      )}
+
+      {analysis && (
+        <div className="space-y-3 rounded-[var(--radius-card)] border border-line bg-surface p-5">
+          <p className="font-medium">Does this match your skin?</p>
+          <ToneCorrection estimate={analysis.lab} />
+        </div>
       )}
 
       {analysis && capture && (

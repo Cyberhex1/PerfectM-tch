@@ -5,6 +5,7 @@
  * the less the starting estimate matters.
  */
 import {
+  DEPTH_ORDER,
   DEPTH_REFERENCE,
   depthFromLab,
   isOliveLike,
@@ -53,10 +54,28 @@ export function buildSkinModel(profile: Profile, db?: FoundationDb | null): Skin
   let oliveWeight = 0;
   const q = profile.quiz;
 
+  if (profile.toneOverride) {
+    // the person's own judgement of their skin beats any photo reading
+    colorAnchors.push({ lab: profile.toneOverride.lab, w: 3 });
+    colorEvidence.push({ label: "Skin tone you chose", detail: "counts more than any photo", weight: 3, hex: labToHex(profile.toneOverride.lab) });
+  }
+
+  // Phone auto-exposure brightens darker faces, so photos tend to read lighter than deeper
+  // skin really is. When the person's own depth answer is clearly deeper (or lighter) than
+  // the photo, believe them.
+  const bandGap =
+    profile.photo && q.depthSelf ? Math.abs(DEPTH_ORDER.indexOf(depthFromLab(profile.photo.lab)) - DEPTH_ORDER.indexOf(q.depthSelf)) : 0;
+  const disagree = bandGap >= 2;
+
   if (profile.photo) {
-    const w = profile.photo.quality;
+    const w = profile.photo.quality * (disagree ? 0.3 : 1) * (profile.toneOverride ? 0.5 : 1);
     colorAnchors.push({ lab: profile.photo.lab, w });
-    colorEvidence.push({ label: "Your photo", detail: `${Math.round(w * 100)}% lighting quality`, weight: w, hex: profile.photo.hex });
+    colorEvidence.push({
+      label: "Your photo",
+      detail: disagree ? "down-weighted — it disagrees with your depth answer (cameras often lighten deeper skin)" : `${Math.round(profile.photo.quality * 100)}% lighting quality`,
+      weight: w,
+      hex: profile.photo.hex,
+    });
     axisVotes.push({ v: profile.photo.undertoneAxis, w: 0.8 * w });
     undertoneEvidence.push({ label: "Photo colour analysis", detail: profile.photo.undertone, weight: 0.8 * w });
     oliveWeight += 0.6 * w;
@@ -64,7 +83,7 @@ export function buildSkinModel(profile: Profile, db?: FoundationDb | null): Skin
   }
 
   if (q.depthSelf) {
-    const w = colorAnchors.length ? 0.3 : 0.6;
+    const w = disagree ? 1.5 : profile.photo ? 0.5 : 1;
     colorAnchors.push({ lab: DEPTH_REFERENCE[q.depthSelf], w });
     colorEvidence.push({ label: "Your depth answer", detail: q.depthSelf, weight: w, hex: labToHex(DEPTH_REFERENCE[q.depthSelf]) });
   }

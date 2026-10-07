@@ -70,3 +70,24 @@ describe("free-form parsing", () => {
     expect(lines[1].entry.category).toBe("cleanser");
   });
 });
+
+describe("deeper skin isn't lightened by the camera", () => {
+  // a typical auto-exposed selfie of deep brown skin reads around L* 53 ("tan")
+  const brightenedPhoto: PhotoAnalysis = { ...photo, lab: { L: 53, a: 16, b: 26 }, hex: "#9a6f55", depth: "tan" };
+
+  it("a skin tone the person picks outranks the photo", () => {
+    const m = buildSkinModel(profileWith({ photo: brightenedPhoto, toneOverride: { lab: { L: 35, a: 16.2, b: 21.4 }, setAt: "" } }), db);
+    expect(["deep", "rich"]).toContain(m.depth);
+  });
+
+  it("a deep self-reported depth wins when the photo reads two or more steps lighter", () => {
+    const m = buildSkinModel(profileWith({ photo: brightenedPhoto }, { depthSelf: "rich" }), db);
+    expect(["deep", "rich"]).toContain(m.depth);
+    expect(m.colorEvidence.find((e) => e.label === "Your photo")?.detail).toMatch(/down-weighted/);
+  });
+
+  it("still trusts the photo when the person's answer roughly agrees", () => {
+    const m = buildSkinModel(profileWith({ photo: brightenedPhoto }, { depthSelf: "tan" }), db);
+    expect(m.depth).toBe("tan");
+  });
+});

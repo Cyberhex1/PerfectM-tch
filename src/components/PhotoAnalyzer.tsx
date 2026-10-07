@@ -321,7 +321,7 @@ export function AnalysisSummary({ analysis }: { analysis: PhotoAnalysis }) {
       <Card className="flex items-center gap-4">
         <Swatch hex={analysis.hex} size={64} />
         <div>
-          <p className="text-xs uppercase tracking-[0.14em] text-muted">Your skin reads as</p>
+          <p className="text-xs uppercase tracking-[0.14em] text-muted">This photo reads as</p>
           <p className="mt-1 font-display text-2xl capitalize">
             {analysis.depth.replace("-", " ")}, {analysis.undertone}
           </p>

@@ -126,16 +126,40 @@ export function depthFromLab(lab: Lab): Depth {
 
 export const DEPTH_ORDER: Depth[] = ["fair", "light", "light-medium", "medium", "tan", "deep", "rich"];
 
-/** Typical skin colours for each depth — used when there's no photo yet. */
+/**
+ * Typical skin colours for each depth — the median of real foundation shades
+ * (6,700 swatches) at that lightness. Used when there's no photo yet.
+ */
 export const DEPTH_REFERENCE: Record<Depth, Lab> = {
-  fair: { L: 83, a: 9, b: 15 },
-  light: { L: 76, a: 11, b: 18 },
-  "light-medium": { L: 69, a: 12, b: 21 },
-  medium: { L: 62, a: 13, b: 23 },
-  tan: { L: 53, a: 14, b: 24 },
-  deep: { L: 43, a: 13, b: 21 },
-  rich: { L: 33, a: 11, b: 16 },
+  fair: { L: 83, a: 9, b: 21 },
+  light: { L: 76, a: 11.4, b: 24 },
+  "light-medium": { L: 69, a: 14, b: 27.5 },
+  medium: { L: 62, a: 17, b: 30 },
+  tan: { L: 53, a: 17.4, b: 28.2 },
+  deep: { L: 43, a: 18.3, b: 26.3 },
+  rich: { L: 32, a: 15.4, b: 19 },
 };
+
+/**
+ * A 13-step skin-tone scale for people to pick their own shade, with as many steps
+ * at the deep end as at the light end. Colours are medians of real foundation
+ * shades at each lightness.
+ */
+export const TONE_SCALE: Lab[] = [
+  { L: 86, a: 7.9, b: 20.1 },
+  { L: 80, a: 9.9, b: 21.7 },
+  { L: 74, a: 12.1, b: 25.2 },
+  { L: 68, a: 14.3, b: 27.9 },
+  { L: 62, a: 17.1, b: 30.1 },
+  { L: 56, a: 16.9, b: 28.7 },
+  { L: 50, a: 17.9, b: 27.7 },
+  { L: 45, a: 18.8, b: 27.2 },
+  { L: 40, a: 17.6, b: 25 },
+  { L: 35, a: 16.2, b: 21.4 },
+  { L: 30, a: 14.8, b: 17.7 },
+  { L: 25, a: 13.4, b: 12.3 },
+  { L: 21, a: 10.7, b: 9.4 },
+];
 
 /**
  * Undertone axis from a skin colour: -1 = cool (pink/red), +1 = warm (yellow/golden).

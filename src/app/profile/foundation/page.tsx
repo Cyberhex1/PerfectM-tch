@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useProfile } from "@/components/ProfileProvider";
+import { ToneCorrection } from "@/components/ToneCorrection";
 import { ReactionPicker } from "@/components/ReactionPicker";
 import { Badge, Button, Card, Chip, cx, Eyebrow, H2, Notice, Spinner, Swatch } from "@/components/ui";
 import { matchLabel, TIER_LABEL, UNDERTONE_LABEL, type FoundationMatch } from "@/lib/foundations";
@@ -15,6 +16,7 @@ export default function FoundationPage() {
   const { profile, model, db, dbError } = useProfile();
   const [filters, setFilters] = useState<Filters>({ maxTier: 4 });
   const [limit, setLimit] = useState(12);
+  const [editTone, setEditTone] = useState(false);
   const ranked = useMemo(() => (db ? topFoundations(profile, model, db) : []), [profile, model, db]);
   const shown = ranked.filter(
     (m) => (!filters.finish || m.product.finish === filters.finish) && m.product.tier <= filters.maxTier && (!filters.spf || m.product.spf),
@@ -44,9 +46,17 @@ export default function FoundationPage() {
           <div className="text-sm">
             <p className="font-medium">Your target</p>
             <p className="text-muted">{Math.round(model.confidence * 100)}% confidence</p>
+            <button type="button" onClick={() => setEditTone(!editTone)} className="text-xs underline underline-offset-2" aria-expanded={editTone}>
+              {editTone ? "Done" : "Too light or too dark?"}
+            </button>
           </div>
         </div>
       </div>
+      {editTone && (
+        <Card>
+          <ToneCorrection estimate={profile.photo?.lab} />
+        </Card>
+      )}
 
       {model.colorEvidence.length === 0 && (
         <Notice tone="warn">

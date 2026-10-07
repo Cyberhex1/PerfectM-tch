@@ -6,6 +6,7 @@ import { BudgetSliders } from "@/components/BudgetSliders";
 import { Disclaimer } from "@/components/Disclaimer";
 import { concernLabel } from "@/components/PhotoAnalyzer";
 import { useProfile } from "@/components/ProfileProvider";
+import { ToneCorrection } from "@/components/ToneCorrection";
 import { Badge, Button, ButtonLink, Card, Eyebrow, H2, Meter, Notice, Swatch } from "@/components/ui";
 import { matchLabel, TIER_LABEL } from "@/lib/foundations";
 import { personalSignals } from "@/lib/ingredients";
@@ -16,6 +17,7 @@ import { buildRoutine } from "@/lib/skincare";
 export default function Overview() {
   const { profile, update, model, db, reset } = useProfile();
   const [editBudget, setEditBudget] = useState(false);
+  const [editTone, setEditTone] = useState(false);
   const strength = profileStrength(profile);
   // with no photo, depth answer or worn shade, the model is just a default — don't present it as a reading
   const known = model.colorEvidence.length > 0;
@@ -56,6 +58,9 @@ export default function Overview() {
               </p>
             </>
           )}
+          <button type="button" onClick={() => setEditTone(!editTone)} className="mt-2 text-sm underline underline-offset-4" aria-expanded={editTone}>
+            {editTone ? "Done" : known ? "Not right? Adjust my skin tone" : "Pick my skin tone"}
+          </button>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {q.skinType && <Badge>{q.skinType} skin</Badge>}
             {q.sensitivity && q.sensitivity !== "not" && <Badge tone="warn">{q.sensitivity === "very" ? "very sensitive" : "somewhat sensitive"}</Badge>}
@@ -69,6 +74,15 @@ export default function Overview() {
           </div>
         </div>
       </section>
+
+      {editTone && (
+        <Card>
+          <p className="font-medium">Your skin tone</p>
+          <div className="mt-2">
+            <ToneCorrection estimate={profile.photo?.lab} />
+          </div>
+        </Card>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
         <Card>

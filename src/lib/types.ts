@@ -151,6 +151,8 @@ export type Profile = {
   /** ingredients the person said are fine for them (suppresses warnings) */
   cleared: string[];
   onboarding: { photo: boolean; quiz: boolean; products: boolean; budget: boolean };
+  /** skin tone the person picked themselves — overrides the photo, which cameras often lighten */
+  toneOverride?: { lab: Lab; setAt: string };
   /** photo gallery preference — undefined until the person has chosen */
   gallery?: { enabled: boolean; decidedAt: string };
 };
