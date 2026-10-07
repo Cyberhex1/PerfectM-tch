@@ -173,6 +173,8 @@ export function samplePatch(px: Pixels, point: { x: number; y: number }, radius:
   };
 }
 
+const SKIN_HUE_OFFSET = 3.5;
+
 const WEIGHTS: Record<SamplePoint["id"], number> = {
   forehead: 0.8,
   "left-cheek": 1,
@@ -228,7 +230,9 @@ export function analyzeSkin(px: Pixels, points: SamplePoint[], box: FaceBox): Ph
   }
   quality = Math.max(0.2, Math.min(1, quality));
 
-  const axis = undertoneAxisFromLab(lab);
+  // Live skin photographs redder than foundation swatches, which is what the axis
+  // was calibrated on — shift the neutral point down a few degrees.
+  const axis = undertoneAxisFromLab(lab, SKIN_HUE_OFFSET);
   const olive = isOliveLike(lab);
 
   return {

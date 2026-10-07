@@ -141,11 +141,13 @@ export const DEPTH_REFERENCE: Record<Depth, Lab> = {
  * Undertone axis from a skin colour: -1 = cool (pink/red), +1 = warm (yellow/golden).
  * Skin hue angles mostly sit between ~40° (rosy) and ~70° (golden).
  */
-export function undertoneAxisFromLab(lab: Lab): number {
+export function undertoneAxisFromLab(lab: Lab, hueOffset = 0): number {
   // Calibrated on ~5,700 foundation swatches labelled cool/neutral/warm: the neutral
   // hue angle drops from ~66° on light skin to ~51° on deep skin, and cool/warm sit
   // roughly ±4° either side of it.
-  const neutralHue = 51 + 0.33 * (lab.L - 38);
+  // hueOffset lets callers correct for live skin, which reads a few degrees redder
+  // than foundation swatches do.
+  const neutralHue = 51 + 0.33 * (lab.L - 38) - hueOffset;
   return Math.max(-1, Math.min(1, (hueAngle(lab) - neutralHue) / 4.5));
 }
 

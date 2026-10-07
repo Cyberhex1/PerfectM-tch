@@ -49,10 +49,17 @@ function rank(raw: Raw[], query: string): ObfProduct[] {
     }))
     .filter((p) => p.name && p.ingredients)
     .map((p) => {
-      const hay = norm(`${p.brand} ${p.name}`);
+      const brand = norm(p.brand);
+      const name = norm(p.name);
       // loose token match so "moisturizing" finds "moisturising" and "cream" finds "creme"
-      const hit = (t: string) => hay.includes(t) || (t.length > 5 && hay.includes(t.slice(0, 6))) || (t === "cream" && hay.includes("creme"));
-      return { p, score: q.filter(hit).length / Math.max(1, q.length) };
+      const hit = (hay: string, t: string) =>
+        hay.includes(t) || (t.length > 5 && hay.includes(t.slice(0, 6))) || (t === "cream" && hay.includes("creme"));
+      const nameTokens = q.filter((t) => !brand.includes(t));
+      const nameHits = nameTokens.filter((t) => hit(name, t)).length;
+      const brandHits = q.length - nameTokens.length;
+      // words beyond the brand must match the product name, or every product from the brand would tie
+      if (nameTokens.length && !nameHits) return { p, score: 0 };
+      return { p, score: (nameHits * 2 + brandHits) / (nameTokens.length * 2 + brandHits || 1) };
     })
     .filter((x) => x.score >= 0.5)
     .sort((a, b) => b.score - a.score)

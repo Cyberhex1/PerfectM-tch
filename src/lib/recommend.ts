@@ -1,4 +1,4 @@
-import { rankFoundations, type FoundationDb, type MatchInput } from "./foundations";
+import { rankFoundations, resolveShade, type FoundationDb, type MatchInput } from "./foundations";
 import type { SkinModel } from "./learning";
 import type { ProductEntry, Profile, Reaction } from "./types";
 
@@ -13,8 +13,18 @@ export function foundationIdFor(entry: ProductEntry, db: FoundationDb): string |
 export function matchInputFor(profile: Profile, model: SkinModel, db: FoundationDb): MatchInput {
   const liked = new Set<string>();
   const avoid = new Map<string, string>();
+  const rejected = new Set<string>();
+  let minL: number | undefined;
+  let maxL: number | undefined;
   for (const e of profile.products) {
     if (e.category !== "foundation") continue;
+    const worn = resolveShade(db, e.shadeRef);
+    if (worn && e.verdict !== "liked" && e.reactions.some((r) => SHADE_ONLY.includes(r))) {
+      rejected.add(worn.shade.ref);
+      // "too light" means you're darker than this shade — anything as light or lighter is out
+      if (e.reactions.includes("too-light")) maxL = Math.min(maxL ?? Infinity, worn.shade.lab.L - 1.5);
+      if (e.reactions.includes("too-dark")) minL = Math.max(minL ?? -Infinity, worn.shade.lab.L + 1.5);
+    }
     const id = foundationIdFor(e, db);
     if (!id) continue;
     if (e.verdict === "liked") liked.add(id);
@@ -41,6 +51,9 @@ export function matchInputFor(profile: Profile, model: SkinModel, db: Foundation
     quality: profile.preferences.quality,
     liked,
     avoid,
+    rejected,
+    // contradictory feedback (e.g. lighting differences between shades) — ignore the bounds
+    bounds: minL !== undefined && maxL !== undefined && minL > maxL ? {} : { minL, maxL },
   };
 }
 

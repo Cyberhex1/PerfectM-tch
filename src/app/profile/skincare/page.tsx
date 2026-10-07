@@ -47,7 +47,18 @@ export default function SkincarePage() {
         <section key={g.when}>
           <h3 className="mb-3 font-display text-2xl">{g.when}</h3>
           <ol className="space-y-3">
-            {g.steps.map((s, i) => (
+            {g.steps.map((s, i) =>
+              g.when === "Evening" && s.when === "AM & PM" ? (
+                <li key={`${g.when}-${s.title}`}>
+                  <Card className="flex items-baseline gap-3 p-4 sm:p-5">
+                    <span className="font-display text-xl text-accent">{i + 1}</span>
+                    <p className="flex-1">
+                      <span className="font-medium">{s.title}</span>
+                      <span className="text-sm text-muted"> — same as morning ({s.picks[0].item.brand} {s.picks[0].item.name})</span>
+                    </p>
+                  </Card>
+                </li>
+              ) : (
               <li key={`${g.when}-${s.title}`}>
                 <Card className="p-4 sm:p-5">
                   <div className="flex items-baseline gap-3">
@@ -77,7 +88,8 @@ export default function SkincarePage() {
                   </ul>
                 </Card>
               </li>
-            ))}
+              ),
+            )}
           </ol>
         </section>
       ))}

@@ -351,7 +351,11 @@ export function personalSignals(profile: Pick<Profile, "products" | "cleared">):
     const enough = s.dislikedWeight >= 2 || (isKnown && s.dislikedWeight >= 1);
     if (enough && s.suspicion >= 0.4 && liked <= s.dislikedProducts.length / 2) out.push(s);
   }
-  return out.sort((a, b) => b.suspicion - a.suspicion);
+  // A family pattern that's just one ingredient under another name ("Fragrance" family =
+  // the "fragrance" ingredient in the same products) adds nothing — keep the specific one.
+  const key = (s: PersonalSignal) => [...s.dislikedProducts].sort().join("|");
+  const ingredientSets = new Set(out.filter((s) => s.kind === "ingredient").map(key));
+  return out.filter((s) => s.kind === "ingredient" || !ingredientSets.has(key(s))).sort((a, b) => b.suspicion - a.suspicion);
 }
 
 export type Warning = {

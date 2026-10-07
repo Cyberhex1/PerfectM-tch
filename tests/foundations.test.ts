@@ -50,3 +50,34 @@ describe("rankFoundations", () => {
     expect(res.slice(0, 5).every((m) => m.product.tier <= 2)).toBe(true);
   });
 });
+
+describe("feedback loop", () => {
+  it("moves past a shade reported as too light", async () => {
+    const { matchInputFor } = await import("@/lib/recommend");
+    const { buildSkinModel } = await import("@/lib/learning");
+    const { profileWith } = await import("./helpers");
+    const base = profileWith({}, { depthSelf: "medium" });
+    const first = rankFoundations(db, matchInputFor(base, buildSkinModel(base, db), db))[0];
+    const withFeedback = profileWith(
+      {
+        products: [
+          {
+            id: "x",
+            name: first.product.name,
+            brand: first.product.brand,
+            category: "foundation",
+            shadeRef: first.shade.ref,
+            verdict: "disliked",
+            reactions: ["too-light"],
+            addedAt: "",
+          },
+        ],
+      },
+      { depthSelf: "medium" },
+    );
+    const after = rankFoundations(db, matchInputFor(withFeedback, buildSkinModel(withFeedback, db), db));
+    expect(after[0].shade.ref).not.toBe(first.shade.ref);
+    // every top pick is now darker than the shade that was too light
+    expect(after.slice(0, 5).every((m) => m.shade.lab.L < first.shade.lab.L)).toBe(true);
+  });
+});

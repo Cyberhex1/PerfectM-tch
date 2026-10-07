@@ -28,7 +28,8 @@ export function ButtonLink({
 }
 
 export function Card({ className, ...rest }: ComponentProps<"div">) {
-  return <div className={cx("rounded-[var(--radius-card)] border border-line bg-surface p-5 sm:p-6", className)} {...rest} />;
+  // min-w-0 stops long truncated text from stretching grid/flex columns on small screens
+  return <div className={cx("min-w-0 rounded-[var(--radius-card)] border border-line bg-surface p-5 sm:p-6", className)} {...rest} />;
 }
 
 export function Eyebrow({ children, className }: { children: ReactNode; className?: string }) {

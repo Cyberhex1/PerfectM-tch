@@ -228,6 +228,10 @@ export type MatchInput = {
   liked: Set<string>;
   /** productId -> reason it's out (non-shade problems like breakouts) */
   avoid: Map<string, string>;
+  /** exact shades the person has worn and reported as wrong */
+  rejected?: Set<string>;
+  /** lightness limits learned from "too light" / "too dark" feedback */
+  bounds?: { minL?: number; maxL?: number };
 };
 
 export type FoundationMatch = {
@@ -259,7 +263,12 @@ export function rankFoundations(db: FoundationDb, input: MatchInput): Foundation
           ut = Math.abs(UNDERTONE_AXIS[s.undertone] - input.undertoneAxis) * 1.6;
           if (input.olive && s.undertone === "O") ut -= 1.5;
         }
-        return { s, dE, total: dE + ut };
+        let learned = 0;
+        if (input.rejected?.has(s.ref)) learned += 6;
+        const { minL, maxL } = input.bounds ?? {};
+        if (maxL !== undefined && s.lab.L > maxL) learned += (s.lab.L - maxL) * 0.8;
+        if (minL !== undefined && s.lab.L < minL) learned += (minL - s.lab.L) * 0.8;
+        return { s, dE, total: dE + ut + learned };
       })
       .sort((a, b) => a.total - b.total);
     if (!scored.length) continue;

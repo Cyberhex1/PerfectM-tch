@@ -83,7 +83,7 @@ export default function Overview() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Link href="/profile/foundation" className="group">
+        <Link href="/profile/foundation" className="group min-w-0">
           <Card className="h-full transition group-hover:border-ink/40">
             <Eyebrow>Top foundation match</Eyebrow>
             {top[0] ? (
@@ -104,14 +104,14 @@ export default function Overview() {
             )}
           </Card>
         </Link>
-        <Link href="/profile/skincare" className="group">
+        <Link href="/profile/skincare" className="group min-w-0">
           <Card className="h-full transition group-hover:border-ink/40">
             <Eyebrow>Your routine</Eyebrow>
             <p className="mt-4 font-display text-3xl">{routine.length} steps</p>
             <p className="mt-1 text-sm text-muted">{routine.map((s) => s.title.split(" (")[0]).join(" · ")}</p>
           </Card>
         </Link>
-        <Link href="/profile/ingredients" className="group">
+        <Link href="/profile/ingredients" className="group min-w-0">
           <Card className="h-full transition group-hover:border-ink/40">
             <Eyebrow>Ingredient watch</Eyebrow>
             <p className="mt-4 font-display text-3xl">{signals.length + profile.watchlist.length + q.allergies.length}</p>
@@ -225,8 +225,8 @@ export default function Overview() {
         </div>
         {profile.photo && profile.photo.warnings.length > 0 && (
           <Notice tone="warn" className="mt-4">
-            Your photo had tricky lighting ({profile.photo.warnings[0].toLowerCase()}) A retake in daylight will sharpen
-            your match.
+            <p className="font-medium">Your photo had tricky lighting — a retake in daylight will sharpen your match.</p>
+            <p className="mt-1 text-muted">{profile.photo.warnings[0]}</p>
           </Notice>
         )}
       </section>

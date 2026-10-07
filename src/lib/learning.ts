@@ -138,7 +138,7 @@ export function buildSkinModel(profile: Profile, db?: FoundationDb | null): Skin
     undertone: undertoneFromAxis(undertoneAxis, olive),
     undertoneAxis,
     olive,
-    confidence: Math.min(1, colorW / 5) * 0.7 + Math.min(1, axisW / 4) * 0.3,
+    confidence: Math.min(1, colorW / 9) * 0.75 + Math.min(1, axisW / 6) * 0.25,
     colorEvidence: colorEvidence.sort((a, b) => b.weight - a.weight),
     undertoneEvidence: undertoneEvidence.sort((a, b) => b.weight - a.weight),
   };
@@ -157,24 +157,25 @@ export function profileStrength(profile: Profile): Strength {
   if (profile.onboarding.quiz) score += 20;
   else tips.push("Finish the skin quiz.");
 
-  const foundations = profile.products.filter((p) => p.category === "foundation" && p.shadeRef);
-  score += Math.min(30, foundations.length * 15);
-  if (foundations.length < 2)
+  const shades = profile.products.filter((p) => (p.category === "foundation" || p.category === "concealer") && p.shadeRef);
+  const loved = shades.filter((p) => p.verdict === "liked").length;
+  score += Math.min(30, loved * 15) + Math.min(10, (shades.length - loved) * 5);
+  if (loved < 2)
     tips.push(
-      foundations.length
-        ? "Log one more foundation shade you've worn — each one sharpens your match."
-        : "Log a foundation you've worn (and its shade). This is the single best way to improve your match.",
+      loved
+        ? "Log one more foundation shade that worked for you — each one sharpens your match."
+        : "Log a foundation shade that's worked for you. It's the single best way to improve your match.",
     );
 
   const logged = profile.products.length;
-  score += Math.min(15, logged * 2.5);
-  if (logged < 6) tips.push("Keep logging products that worked or didn't — skincare included.");
+  score += Math.min(10, logged * 1.5);
+  if (logged < 7) tips.push("Keep logging products that worked or didn't — skincare included.");
 
   const withIngredients = profile.products.filter((p) => p.ingredients).length;
-  score += Math.min(15, withIngredients * 3);
-  if (withIngredients < 4) tips.push("Add ingredient lists to your logged products so we can spot irritant patterns.");
+  score += Math.min(10, withIngredients * 2);
+  if (withIngredients < 5) tips.push("Add ingredient lists to your logged products so we can spot irritant patterns.");
 
   score = Math.round(Math.min(100, score));
-  const label = score >= 85 ? "Dialled in" : score >= 60 ? "Getting close" : score >= 35 ? "Learning you" : "Just starting";
+  const label = score >= 90 ? "Dialled in" : score >= 65 ? "Getting close" : score >= 35 ? "Learning you" : "Just starting";
   return { score, label, tips: tips.slice(0, 3) };
 }
