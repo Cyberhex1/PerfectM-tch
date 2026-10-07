@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@theme {
+  --color-canvas: #faf8f5;
+  --color-surface: #ffffff;
+  --color-ink: #1c1917;
+  --color-muted: #78716c;
+  --color-faint: #a8a29e;
+  --color-line: #e9e4dd;
+  --color-accent: #9d5c4d;
+  --color-accent-soft: #f4e9e4;
+  --color-good: #4d7c5a;
+  --color-good-soft: #e8f1ea;
+  --color-warn: #b07a1e;
+  --color-warn-soft: #f8efdc;
+  --color-bad: #a8463a;
+  --color-bad-soft: #f8e6e2;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-serif), ui-serif, Georgia, serif;
+
+  --radius-card: 1.25rem;
+}
+
+html {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--color-canvas);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--color-accent-soft);
+}
+
+/* sliders */
+input[type="range"].pm-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--color-ink) var(--fill, 50%), var(--color-line) var(--fill, 50%));
+  outline: none;
+}
+input[type="range"].pm-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-ink);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.12);
+  cursor: grab;
+}
+input[type="range"].pm-range::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-ink);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.12);
+  cursor: grab;
+}
+input[type="range"].pm-range:focus-visible::-webkit-slider-thumb {
+  outline: 3px solid var(--color-accent-soft);
+}
+
+@keyframes pm-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.pm-fade-up {
+  animation: pm-fade-up 0.35s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pm-fade-up {
+    animation: none;
+  }
+}
