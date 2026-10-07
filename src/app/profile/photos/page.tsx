@@ -50,7 +50,7 @@ export default function PhotosPage() {
     <div className="space-y-10">
       <div>
         <Eyebrow>Photos</Eyebrow>
-        <H2 className="mt-2">Your skin, over time.</H2>
+        <H2 as="h1" className="mt-2">Your skin, over time.</H2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
           Take or upload a photo whenever you like and date it. Tap any photo for its skin and foundation reading, or
           compare two to see what&apos;s changed.
@@ -76,7 +76,7 @@ export default function PhotosPage() {
 
           {photos.length >= 2 && (
             <section>
-              <h3 className="mb-4 font-display text-2xl">Your progress</h3>
+              <h2 className="mb-4 font-display text-2xl">Your progress</h2>
               <TrendCharts photos={photos} />
             </section>
           )}
@@ -85,9 +85,9 @@ export default function PhotosPage() {
 
           <section>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <h3 className="font-display text-2xl">
+              <h2 className="font-display text-2xl">
                 Timeline <span className="font-sans text-sm text-muted">· {photos.length} photo{photos.length === 1 ? "" : "s"}</span>
-              </h3>
+              </h2>
               {photos.length > 0 && (
                 <div className="flex gap-2">
                   <Chip selected={!newestFirst} onClick={() => setNewestFirst(false)}>

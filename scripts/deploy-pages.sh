@@ -15,4 +15,6 @@ cp .pages-bundle/worker.js .pages-dist/_worker.js/index.js
 cat > .pages-dist/_routes.json <<'JSON'
 { "version": 1, "include": ["/*"], "exclude": ["/_next/static/*", "/data/*", "/favicon.ico"] }
 JSON
+# the same security headers for static files Pages serves directly
+node -e 'import("./security-headers.mjs").then(({ SECURITY_HEADERS: h }) => require("node:fs").writeFileSync(".pages-dist/_headers", ["/*", ...h.map((x) => `  ${x.key}: ${x.value}`)].join("\n") + "\n"))'
 npx wrangler pages deploy .pages-dist --project-name perfectm0tch --branch main --commit-dirty=true

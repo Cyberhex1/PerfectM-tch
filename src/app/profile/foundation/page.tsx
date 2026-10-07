@@ -33,7 +33,7 @@ export default function FoundationPage() {
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <Eyebrow>Foundation</Eyebrow>
-          <H2 className="mt-2">Your closest shades, across {db.products.length} formulas.</H2>
+          <H2 as="h1" className="mt-2">Your closest shades, across {db.products.length} formulas.</H2>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
             Ranked by colour match first, then your finish, coverage, skin type and budget. Tried one? Tell us how it
             went — it&apos;s the fastest way to a perfect match.
@@ -47,6 +47,13 @@ export default function FoundationPage() {
           </div>
         </div>
       </div>
+
+      {model.colorEvidence.length === 0 && (
+        <Notice tone="warn">
+          We don&apos;t have anything to read your skin tone from yet, so these are matches for a generic medium tone. Add a
+          photo, answer the skin-depth question in the quiz, or log a foundation shade you&apos;ve worn.
+        </Notice>
+      )}
 
       <div className="flex flex-wrap gap-2">
         {(["matte", "natural", "radiant"] as Finish[]).map((f) => (
@@ -71,6 +78,11 @@ export default function FoundationPage() {
           <MatchCard key={m.product.id} rank={i + 1} match={m} />
         ))}
       </ol>
+      {shown.length === 0 && (
+        <p className="rounded-2xl border border-dashed border-line py-10 text-center text-sm text-muted">
+          No formulas match all of these filters. Try removing one.
+        </p>
+      )}
       {shown.length > limit && (
         <div className="text-center">
           <Button variant="secondary" onClick={() => setLimit(limit + 12)}>

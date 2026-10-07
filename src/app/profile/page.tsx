@@ -17,6 +17,8 @@ export default function Overview() {
   const { profile, update, model, db, reset } = useProfile();
   const [editBudget, setEditBudget] = useState(false);
   const strength = profileStrength(profile);
+  // with no photo, depth answer or worn shade, the model is just a default — don't present it as a reading
+  const known = model.colorEvidence.length > 0;
   const top = useMemo(() => (db ? topFoundations(profile, model, db).slice(0, 3) : []), [profile, model, db]);
   const routine = useMemo(() => buildRoutine(profile, model.depth), [profile, model.depth]);
   const signals = useMemo(() => personalSignals(profile), [profile]);
@@ -37,12 +39,23 @@ export default function Overview() {
   return (
     <div className="space-y-8">
       <section className="flex flex-col gap-6 sm:flex-row sm:items-center">
-        <Swatch hex={model.hex} size={96} />
+        {known ? <Swatch hex={model.hex} size={96} /> : <span className="grid h-24 w-24 shrink-0 place-items-center rounded-full border border-dashed border-ink/30 text-2xl text-faint">?</span>}
         <div className="flex-1">
           <Eyebrow>Your skin profile</Eyebrow>
-          <h1 className="mt-2 font-display text-4xl capitalize tracking-tight sm:text-5xl">
-            {model.depth.replace("-", " ")} · {model.undertone}
-          </h1>
+          {known ? (
+            <h1 className="mt-2 font-display text-4xl capitalize tracking-tight sm:text-5xl">
+              {model.depth.replace("-", " ")} · {model.undertone}
+            </h1>
+          ) : (
+            <>
+              <h1 className="mt-2 font-display text-4xl tracking-tight sm:text-5xl">We don&apos;t know your skin tone yet.</h1>
+              <p className="mt-2 text-sm text-muted">
+                <Link href="/start/photo" className="underline underline-offset-4">Add a photo</Link>, answer the{" "}
+                <Link href="/start/quiz" className="underline underline-offset-4">skin-depth question</Link>, or log a foundation shade
+                you&apos;ve worn — until then, matches are a generic starting point.
+              </p>
+            </>
+          )}
           <div className="mt-3 flex flex-wrap gap-1.5">
             {q.skinType && <Badge>{q.skinType} skin</Badge>}
             {q.sensitivity && q.sensitivity !== "not" && <Badge tone="warn">{q.sensitivity === "very" ? "very sensitive" : "somewhat sensitive"}</Badge>}

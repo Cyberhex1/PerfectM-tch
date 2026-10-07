@@ -40,7 +40,7 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
 
   return (
     <div className="mx-auto max-w-5xl px-5 pb-16">
-      <nav className="-mx-5 mb-8 overflow-x-auto border-b border-line px-5">
+      <nav aria-label="Profile sections" className="-mx-5 mb-8 overflow-x-auto border-b border-line px-5">
         <ul className="flex min-w-max gap-1">
           {TABS.map((t) => {
             const active = t.href === "/profile" ? pathname === "/profile" : pathname.startsWith(t.href);

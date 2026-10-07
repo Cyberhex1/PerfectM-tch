@@ -13,7 +13,7 @@ export default function MakeupPage() {
     <div className="space-y-8">
       <div>
         <Eyebrow>Makeup</Eyebrow>
-        <H2 className="mt-2">Colours and textures for {model.undertone} undertones.</H2>
+        <H2 as="h1" className="mt-2">Colours and textures for {model.undertone} undertones.</H2>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
           Swatches are a starting point — use them to narrow down shades in store. They update as your profile learns
           your exact depth and undertone.

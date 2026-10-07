@@ -25,7 +25,7 @@ export default function SkincarePage() {
     <div className="space-y-10">
       <div>
         <Eyebrow>Skincare</Eyebrow>
-        <H2 className="mt-2">A routine built on evidence, fitted to your skin.</H2>
+        <H2 as="h1" className="mt-2">A routine built on evidence, fitted to your skin.</H2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
           Every recommendation is ranked by how strong the published evidence is for <em>your</em> concerns —
           clinical guidelines and randomized trials first, promising-but-unproven ingredients last. Each one links to
@@ -34,7 +34,7 @@ export default function SkincarePage() {
       </div>
 
       <section>
-        <h3 className="font-display text-2xl">What the evidence says works for you</h3>
+        <h2 className="font-display text-2xl">What the evidence says works for you</h2>
         {look.length ? (
           <ul className="mt-4 grid gap-3 md:grid-cols-2">
             {look.slice(0, 8).map((a) => (
@@ -73,7 +73,7 @@ export default function SkincarePage() {
 
       {groups.map((g) => (
         <section key={g.when}>
-          <h3 className="mb-3 font-display text-2xl">{g.when}</h3>
+          <h2 className="mb-3 font-display text-2xl">{g.when}</h2>
           <ol className="space-y-3">
             {g.steps.map((s, i) =>
               g.when === "Evening" && s.when === "AM & PM" ? (

@@ -55,7 +55,7 @@ export function HomeHero() {
         {STEPS.map((s) => (
           <div key={s.n} className="bg-surface p-6 sm:p-8">
             <p className="font-display text-xl text-accent">{s.n}</p>
-            <h3 className="mt-3 text-lg font-medium">{s.title}</h3>
+            <h2 className="mt-3 text-lg font-medium">{s.title}</h2>
             <p className="mt-1.5 text-sm leading-relaxed text-muted">{s.body}</p>
           </div>
         ))}

@@ -40,8 +40,8 @@ export function Title({ children, className }: { children: ReactNode; className?
   return <h1 className={cx("font-display text-4xl leading-[1.05] tracking-tight sm:text-5xl", className)}>{children}</h1>;
 }
 
-export function H2({ children, className }: { children: ReactNode; className?: string }) {
-  return <h2 className={cx("font-display text-2xl tracking-tight sm:text-3xl", className)}>{children}</h2>;
+export function H2({ children, className, as: Tag = "h2" }: { children: ReactNode; className?: string; as?: "h1" | "h2" }) {
+  return <Tag className={cx("font-display text-2xl tracking-tight sm:text-3xl", className)}>{children}</Tag>;
 }
 
 export function Chip({

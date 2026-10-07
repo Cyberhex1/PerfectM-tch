@@ -154,8 +154,11 @@ export function profileStrength(profile: Profile): Strength {
   else tips.push("Add a photo in natural light for a colour reading.");
   if (profile.photo && profile.photo.quality < 0.7) tips.push("Retake your photo facing a window — the lighting was tricky.");
 
-  if (profile.onboarding.quiz) score += 20;
-  else tips.push("Finish the skin quiz.");
+  const q = profile.quiz;
+  // skipping every question shouldn't count as knowing someone
+  const answered = [q.skinType, q.sensitivity, q.depthSelf, q.undertoneSelf, q.coverage, q.finish].filter(Boolean).length + (q.concerns.length ? 1 : 0);
+  score += Math.round((20 * Math.min(answered, 5)) / 5);
+  if (answered < 3) tips.push("Answer the skin quiz — even a few questions help.");
 
   const shades = profile.products.filter((p) => (p.category === "foundation" || p.category === "concealer") && p.shadeRef);
   const loved = shades.filter((p) => p.verdict === "liked").length;

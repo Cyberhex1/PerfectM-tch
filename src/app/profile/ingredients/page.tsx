@@ -25,7 +25,7 @@ export default function IngredientsPage() {
     <div className="space-y-10">
       <div>
         <Eyebrow>Ingredients</Eyebrow>
-        <H2 className="mt-2">Your personal irritant radar.</H2>
+        <H2 as="h1" className="mt-2">Your personal irritant radar.</H2>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
           We compare the ingredient lists of products that worked for you against the ones that didn&apos;t. Ingredients
           that keep showing up in the misses get flagged — so you can spot them before you buy.
@@ -66,7 +66,7 @@ export default function IngredientsPage() {
       </Card>
 
       <section>
-        <h3 className="font-display text-2xl">What we&apos;ve learned</h3>
+        <h2 className="font-display text-2xl">What we&apos;ve learned</h2>
         {signals.length ? (
           <ul className="mt-4 grid gap-3 md:grid-cols-2">
             {signals.map((s) => (

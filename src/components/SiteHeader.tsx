@@ -17,7 +17,7 @@ export function SiteHeader() {
         <Link href="/" className="font-display text-2xl tracking-tight">
           Perfect<span className="text-accent">Match</span>
         </Link>
-        <nav className="flex items-center gap-1 text-sm">
+        <nav aria-label="Main" className="flex items-center gap-1 text-sm">
           {started && !inFlow && (
             <>
               <NavLink href="/profile" active={pathname.startsWith("/profile")}>

@@ -41,7 +41,7 @@ export default function ProductsPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <Eyebrow>My products</Eyebrow>
-          <H2 className="mt-2">Everything you&apos;ve tried.</H2>
+          <H2 as="h1" className="mt-2">Everything you&apos;ve tried.</H2>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
             Each product you log tunes your shade match and teaches us which ingredients your skin doesn&apos;t like.
             Products with ingredient lists teach us the most.
